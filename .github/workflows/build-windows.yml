@@ -1,0 +1,56 @@
+name: Build OFF SESSION VOCAL STRIP for Windows
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure Windows x64 Release build
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Compile VST3 and DSP tests
+        run: cmake --build build --config Release --parallel
+
+      - name: Run DSP validation
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Stage VST3 installer package
+        shell: pwsh
+        run: |
+          $plugin = Get-ChildItem -Path build -Directory -Recurse -Filter "OFF SESSION VOCAL STRIP.vst3" | Select-Object -First 1
+          if (-not $plugin) { throw "The VST3 bundle was not produced. The Windows build cannot be published." }
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item -Recurse -Force $plugin.FullName (Join-Path $PWD "release\$($plugin.Name)")
+          Copy-Item Install-OFF-SESSION-VOCAL-STRIP.ps1 release/
+          Copy-Item Install-OFF-SESSION-VOCAL-STRIP.bat release/
+          @"
+          OFF SESSION VOCAL STRIP v0.1.0 - Windows x64 VST3
+
+          INSTALL:
+          1. Extract this ZIP.
+          2. Double-click Install-OFF-SESSION-VOCAL-STRIP.bat and approve the Windows prompt.
+          3. Restart Ableton Live or rescan VST3 plug-ins.
+          4. Find OFF SESSION VOCAL STRIP under VST3 audio effects.
+
+          The plug-in declares 0 samples of added host latency and uses no lookahead.
+          Reverb pre-delay and delay echoes are intentional wet-path effects, not host compensation latency.
+          Actual recording latency still depends on the interface driver and Ableton buffer settings.
+          "@ | Set-Content release\INSTALL.txt
+
+      - name: Upload one installable Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: OFF-SESSION-VOCAL-STRIP-v0.1.0-Windows-x64-VST3
+          path: release/
+          if-no-files-found: error
+          retention-days: 14

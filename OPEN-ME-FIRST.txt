@@ -1,0 +1,20 @@
+OFF SESSION VOCAL STRIP v0.1.0
+NYXV x OFF SESSION AUDIO
+
+START HERE:
+1. Extract this ZIP into a normal folder.
+2. Double-click Publish-To-GitHub.bat.
+3. If GitHub asks, sign in through the browser window.
+4. The script creates a separate OFF-SESSION-VOCAL-STRIP repository and starts the Windows build.
+5. In the Actions page, open the successful run and download the single artifact:
+   OFF-SESSION-VOCAL-STRIP-v0.1.0-Windows-x64-VST3
+6. Extract that artifact and double-click Install-OFF-SESSION-VOCAL-STRIP.bat.
+7. Restart Ableton Live / rescan VST3.
+
+Only two downloads are needed: this source ZIP, then the one compiled plugin ZIP.
+The source is not a compiled plugin. Windows MSVC build and DSP tests run in GitHub Actions.
+
+Your GUMZYY CALL FX repository is not touched. This project uses its own separate repository.
+
+Requirements on your PC: Git for Windows and GitHub CLI (gh). If they are already installed
+from the previous GUMZYY workflow, you do not need to download them again.
